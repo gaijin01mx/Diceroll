@@ -1,9 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Un bot para dadoss.
+"""Un bot para dados.
 Algo que los fans de lo RPG deben tener.
 """
+
+#Importar librerias
+import json
+import requests
+ 
+#Variables para el Token y la URL del chatbot
+TOKEN = "1623741914:AAGDffjZfhWc_Soc6-hgFYYnLWEh0ZkNeFI" #Cambialo por tu token
+URL = "https://api.telegram.org/bot" + TOKEN + "/"
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
@@ -93,7 +101,7 @@ def main():
 
     print ('Running bot... ')
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater(token)
+    updater = Updater(TOKEN)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
