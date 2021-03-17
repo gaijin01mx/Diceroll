@@ -22,10 +22,10 @@ class CaseInsensitiveDict(collections.Mapping):
         return self._s.get(k.lower())
 
 arquetipos = {
-    'Arquiteto': 'Você constrói algo de valor duradouro',
-    'Autocrata': 'Você precisa de controle.',
-    'Bon Vivant': 'A não-vida é para o prazer.',
-    'Caçador de Emoções': 'A corrida é o que importa',
+    'Arquitecto': 'Construyes algo de valor duradero.',
+    'Autocrata': 'Necesitas el control.',
+    'Vividor': 'La no vida hay que disfrutarla.',
+    'Ansioso de emociones': 'Vive por la emoción del peligro',
     'Camaleão': 'Você consegue se misturar em qualquer situação.',
     'Capitalista': ' Por que entregar de graça quando você pode vender?',
     'Celebrante': ' A sua causa lhe traz alegria',
@@ -92,6 +92,4 @@ def get_info(query):
     if flag:
         return format_print(key, value)
     else:
-        return "Arquetipo : " + query + "| não encontrado."
-
-
+        return "Arquetipo : " + query + "| no encontrado."
