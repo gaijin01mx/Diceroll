@@ -60,7 +60,7 @@ def melee(bot, update):
 
 
 def weapons(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/tabela-de-armas-de-longo-alcance.png', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/tabla-de-armas-de-largo-alcance.png', 'rb'))
 
 
 def roll(bot, update, args):
