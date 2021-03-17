@@ -1,23 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""Un bot para dados.
-Algo que los fans de lo RPG deben tener.
-"""
-
-#Importar librerias
-import json
-import requests
- 
-#Variables para el Token y la URL del chatbot
-TOKEN = "1623741914:AAGDffjZfhWc_Soc6-hgFYYnLWEh0ZkNeFI" #Cambialo por tu token
-URL = "https://api.telegram.org/bot" + TOKEN + "/"
-
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import *
 import logging
+import Constants as Keys
 from Roll import Roll, WodRoll
-import os
-import arquetipo as arq
 
 
 # Enable logging
@@ -29,30 +13,24 @@ logger = logging.getLogger(__name__)
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
-def start(bot, update):
+def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Bienvenido al Bot de Wod. Escriba /roll NdF, ex. 3d10 o /wod N D"')
+    update.message.reply_text("Bienvenido al Bot de Wod. Escriba /roll NdF, ex. 3d10 o /wod N D")
 
 
-def help(bot, update):
+def help(update, context):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Aun no implemento el menu')
 
 
-def echo(bot, update):
+def echo(context, update):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
 
-def error(bot, update, error):
+def error_command(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
-
-
-def arquetipo(bot, update, args):
-    "Print arquetype information"
-    query = arq.get_info(args[0])
-    bot.send_message (chat_id=update.message.chat_id, text=query)
 
 
 def xp(bot, update):
@@ -75,7 +53,7 @@ def roll(bot, update, args):
     args = args[0]
     roll = Roll(args)
 
-    bot.send_message (chat_id=update.message.chat_id, text="Rolling {} : {}".format(args, roll.roll_dice()))
+    bot.send_message(chat_id=update.message.chat_id, text="Rolling {} : {}".format(args, roll.roll_dice()))
 
 
 def wod_roll(bot, update, args):
@@ -87,21 +65,18 @@ def wod_roll(bot, update, args):
     roll = WodRoll(args)
     n, d, result, message = roll.roll_dice()
 
-    bot.send_message (chat_id=update.message.chat_id, text="Rolling {}d10 : Dificuldade {} \n"
-                                                           "Result: {} => {}".format(n,d,result, message ))
+    bot.send_message(chat_id=update.message.chat_id, text="Lanzando {}d10 : Dificultad de {} \n"
+                                                          "Result: {} => {}".format(n, d, result, message))
 
 
 def unknown(bot, update):
-    bot.send_message (chat_id=update.message.chat_id, text="Lo siento no entendi el comando.")
+    bot.send_message(chat_id=update.message.chat_id, text="Lo siento no entendi el comando.")
 
 
 def main():
-    token = os.environ['TELEGRAM_TOKEN']
-    """Start the bot."""
-
-    print ('Running bot... ')
+    print('Running bot... ')
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater(TOKEN)
+    updater = Updater(Keys.API_KEY, use_context=True)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
@@ -109,14 +84,12 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler (CommandHandler("xp", xp))
-    dp.add_handler(CommandHandler("roll", roll, pass_args=True))
-    dp.add_handler(CommandHandler("wod", wod_roll, pass_args=True))
-    dp.add_handler(CommandHandler("arquetipo", arquetipo, pass_args=True))
-    dp.add_handler (CommandHandler("armor", armor))
-    dp.add_handler (CommandHandler("melee", melee))
-    dp.add_handler (CommandHandler("weapons", weapons))
-   
+    dp.add_handler(CommandHandler("xp", xp))
+    dp.add_handler(CommandHandler("roll", roll))
+    dp.add_handler(CommandHandler("wod", wod_roll))
+    dp.add_handler(CommandHandler("armor", armor))
+    dp.add_handler(CommandHandler("melee", melee))
+    dp.add_handler(CommandHandler("weapons", weapons))
 
     dp.add_handler(MessageHandler(Filters.command, unknown))
 
