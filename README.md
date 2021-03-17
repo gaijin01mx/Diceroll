@@ -1,4 +1,4 @@
-Roll4Me Bot
+Dice Roll WOD Bot (Traduccion de Roll4Me)
 ===========
 [![BCH compliance](https://bettercodehub.com/edge/badge/vcaldas/Roll4Me?branch=master)](https://bettercodehub.com/)
 
