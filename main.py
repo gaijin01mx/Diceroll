@@ -28,7 +28,7 @@ def echo(context, update):
     update.message.reply_text(update.message.text)
 
 
-def error(context, update, error):
+def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
 
@@ -65,7 +65,7 @@ def wod_roll(bot, update, args):
     roll = WodRoll(args)
     n, d, result, message = roll.roll_dice()
 
-    bot.send_message(chat_id=update.message.chat_id, text="Rolling {}d10 : Dificuldade {} \n"
+    bot.send_message(chat_id=update.message.chat_id, text="Lanzando {}d10 : Dificultad de {} \n"
                                                           "Result: {} => {}".format(n, d, result, message))
 
 
@@ -85,8 +85,8 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("xp", xp))
-    dp.add_handler(CommandHandler("roll", roll, pass_args=True))
-    dp.add_handler(CommandHandler("wod", wod_roll, pass_args=True))
+    dp.add_handler(CommandHandler("roll", roll))
+    dp.add_handler(CommandHandler("wod", wod_roll))
     dp.add_handler(CommandHandler("armor", armor))
     dp.add_handler(CommandHandler("melee", melee))
     dp.add_handler(CommandHandler("weapons", weapons))
