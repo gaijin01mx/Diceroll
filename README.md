@@ -3,7 +3,7 @@ Dice Roll WOD Bot (Traduccion de Roll4Me)
 [![BCH compliance](https://bettercodehub.com/edge/badge/vcaldas/Roll4Me?branch=master)](https://bettercodehub.com/)
 
 
-A python dice rolling bot for Telegram. To use this bot in Telegram, [click here](https://telegram.me/Roll4Me_bot). This bot was built to enable playing tabletop roleplaying games (RPGs) over Telegram.
+A python dice rolling bot for Telegram. To use this bot in Telegram, [click here](https://telegram.me/Diceroller_WOD_bot). This bot was built to enable playing tabletop roleplaying games (RPGs) over Telegram.
 
 ## Usage
  * `/roll NdF` : Roll N dice with F Faces
