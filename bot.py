@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Simple Bot to reply to roll dice.
-A must have for RPG Fans.
-
+"""Un bot para dadoss.
+Algo que los fans de lo RPG deben tener.
 """
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
@@ -24,12 +23,12 @@ logger = logging.getLogger(__name__)
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(bot, update):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Oi! Ainda não corrijo erros. Digite /roll NdF, ex. 3d10"')
+    update.message.reply_text('Bienvenido al Bot de Wod. Escriba /roll NdF, ex. 3d10 o /wod N D"')
 
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help! Please, help!!!')
+    update.message.reply_text('Aun no implemento el menu')
 
 
 def echo(bot, update):
@@ -49,23 +48,19 @@ def arquetipo(bot, update, args):
 
 
 def xp(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/xp.png', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/xp-1.png', 'rb'))
 
 
 def armor(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/tabela-de-armaduras.png', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/Tabla-de-armadura.png', 'rb'))
 
 
 def melee(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/tabela-de-armas-brancas.png', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/Tabla-de-armas-cuerpo-a-cuerpo.png', 'rb'))
 
 
 def weapons(bot, update):
     bot.send_photo(chat_id=update.message.chat_id, photo=open('img/tabela-de-armas-de-longo-alcance.png', 'rb'))
-
-
-def alesson(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/alesson.jpg', 'rb'))
 
 
 def roll(bot, update, args):
@@ -89,7 +84,7 @@ def wod_roll(bot, update, args):
 
 
 def unknown(bot, update):
-    bot.send_message (chat_id=update.message.chat_id, text="Desculpas. Não entendi esse comando.")
+    bot.send_message (chat_id=update.message.chat_id, text="Lo siento no entendi el comando.")
 
 
 def main():
@@ -113,8 +108,7 @@ def main():
     dp.add_handler (CommandHandler("armor", armor))
     dp.add_handler (CommandHandler("melee", melee))
     dp.add_handler (CommandHandler("weapons", weapons))
-    dp.add_handler (CommandHandler("alesson", alesson))
-
+   
 
     dp.add_handler(MessageHandler(Filters.command, unknown))
 
