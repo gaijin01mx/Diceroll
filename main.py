@@ -15,6 +15,39 @@ from ast import literal_eval
 from config import BOTNAME
 import Constants as Keys
 
+
+help_text = (
+    "Le da la bienvenida a cualquiera que entre a este chat"
+    "Por default solo la persona que invito al bot al "
+    "grupo puede cambiar los atributos del mismo.\nCommands:\n\n"
+    "/welcome - Establece un mensaje de Bienvenida\n"
+    "/goodbye - Establece un mensaje de despedida\n"
+    "/disable\\_goodbye - Desactiva el mensaje de despedida\n"
+    "/lock - Solo la persona que invitó al bot puede cambiar el mensaje\n"
+    "/unlock - Todos pueden cambiar el mensaje\n"
+    '/quiet - Desactiva "Lo siento solo la persona que..." '
+    "& help messages\n"
+    '/unquiet - Activa "Lo siento, solo la persona que..." '
+    "& help messages\n\n"
+    "Puedes usar _$username_ y _$title_ como placeholders al programar"
+    " mensajes. [HTML formatting]"
+    "(https://core.telegram.org/bots/api#formatting-options) "
+    "tambien esta soportado.\n"
+)
+
+"""
+Create database object
+Database schema:
+<chat_id> -> welcome message
+<chat_id>_bye -> goodbye message
+<chat_id>_adm -> user id of the user who invited the bot
+<chat_id>_lck -> boolean if the bot is locked or unlocked
+<chat_id>_quiet -> boolean if the bot is quieted
+
+chats -> list of chat ids where the bot has received messages in.
+"""
+
+
 ladder = {
     8: 'Legendario',
     7: 'Epico',
@@ -242,36 +275,6 @@ logger = logging.basicConfig(
     level=logging.DEBUG,
 )
 
-help_text = (
-    "Le da la bienvenida a cualquiera que entre a este chat"
-    "Por default solo la persona que invito al bot al "
-    "grupo puede cambiar los atributos del mismo.\nCommands:\n\n"
-    "/welcome - Establece un mensaje de Bienvenida\n"
-    "/goodbye - Establece un mensaje de despedida\n"
-    "/disable\\_goodbye - Desactiva el mensaje de despedida\n"
-    "/lock - Solo la persona que invitó al bot puede cambiar el mensaje\n"
-    "/unlock - Todos pueden cambiar el mensaje\n"
-    '/quiet - Desactiva "Lo siento solo la persona que..." '
-    "& help messages\n"
-    '/unquiet - Activa "Lo siento, solo la persona que..." '
-    "& help messages\n\n"
-    "Puedes usar _$username_ y _$title_ como placeholders al programar"
-    " mensajes. [HTML formatting]"
-    "(https://core.telegram.org/bots/api#formatting-options) "
-    "tambien esta soportado.\n"
-)
-
-"""
-Create database object
-Database schema:
-<chat_id> -> welcome message
-<chat_id>_bye -> goodbye message
-<chat_id>_adm -> user id of the user who invited the bot
-<chat_id>_lck -> boolean if the bot is locked or unlocked
-<chat_id>_quiet -> boolean if the bot is quieted
-
-chats -> list of chat ids where the bot has received messages in.
-"""
 # Create database object
 db = pickledb.load("bot.db", True)
 
