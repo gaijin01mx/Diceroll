@@ -405,7 +405,7 @@ def introduce(update, context):
 
 
 # Print help text
-def help(update, context):
+def botwelc(update, context):
     """ Prints help text """
 
     chat_id = update.message.chat.id
@@ -618,6 +618,7 @@ dispatcher = updater.dispatcher
 
 # on different commands - answer in Telegram
 dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(CommandHandler("botwelc", botwelc))
 dispatcher.add_handler(CommandHandler("help", help))
 dispatcher.add_handler(CommandHandler("xp", xp))
 dispatcher.add_handler(CommandHandler("armor", armor))
