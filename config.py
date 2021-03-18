@@ -1,1 +1,1 @@
-BOTNAME = "Diceroller_botWOD"
+BOTNAME = "Diceroller_WOD_Bot"
