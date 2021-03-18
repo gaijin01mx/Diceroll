@@ -211,15 +211,15 @@ def error(bot, update, error):
 
 
 def xp(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=('https://github.com/gaijin01mx/Diceroll/tree/main/img/xp-1.png'))
+    bot.sendPhoto(chat_id=update.message.chat_id, photo=('https://github.com/gaijin01mx/Diceroll/tree/main/img/xp-1.png'))
 
 
 def armor(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=('https://github.com/gaijin01mx/Diceroll/tree/main/img/Tabla-de-armadura.png'))
+    bot.sendPhoto(chat_id=update.message.chat_id, photo=('https://github.com/gaijin01mx/Diceroll/tree/main/img/Tabla-de-armadura.png'))
 
 
 def melee(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=('https://github.com/gaijin01mx/Diceroll/tree/main/img/Tabla-de-armas-cuerpo-a-cuerpo.png'))
+    bot.sendPhoto(chat_id=update.message.chat_id, photo=('https://github.com/gaijin01mx/Diceroll/tree/main/img/Tabla-de-armas-cuerpo-a-cuerpo.png'))
 
 
 def weapons(bot, update):
