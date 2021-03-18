@@ -646,5 +646,5 @@ dispatcher.add_handler(roll_handler)
 help_handler = CommandHandler('help', help)
 dispatcher.add_handler(help_handler)
 
-updater.start_polling(timeout=30, clean=True)
-updater.idle()
+updater.start_polling()
+
