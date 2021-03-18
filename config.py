@@ -1,0 +1,1 @@
+BOTNAME = "Diceroller_botWOD"
