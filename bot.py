@@ -138,7 +138,7 @@ def process(update: Update, context: CallbackContext):
                             plus = ' + '
 
                         if sides == 20 and last_roll == 20 and original_dice_num < 3 and '20' in current_die_results:
-                            nat20text = '    #Natural20'
+                            nat20text = '    #20Natural'
 
                     if is_fate:
                         is_fate = False
@@ -158,7 +158,7 @@ def process(update: Update, context: CallbackContext):
         if bool(re.match('^[0-9+*/ ()-]+$', result['total'])):
             result['total'] = eval(result['total'])
         else:
-            raise Exception('La ecuación de la colicitud no es válida!')
+            raise Exception('La ecuación de la solicitud no es válida!')
 
         if use_ladder:
             # Set if final result is positive or negative
@@ -174,7 +174,7 @@ def process(update: Update, context: CallbackContext):
         logging.info(f'@{username} | ' + ' '.join(context.args) + ' = ' + ''.join(result['equation']) + ' = ' + str(
             result['total']) + nat20text)
         response = (
-            f'{high_low_helper}@{username} rolled<b>{comment}</b>:\r\n {result["visual"]} =\r\n<b>{str(result["total"])}</b>{nat20text}')
+            f'{high_low_helper}@{username} tiró<b>{comment}</b>:\r\n {result["visual"]} =\r\n<b>{str(result["total"])}</b>{nat20text}')
         error = ''
 
     except Exception as e:
