@@ -1,31 +1,208 @@
-from telegram.ext import *
+import sys
+import time
+import re
+import random
+import traceback
+import unicodedata
 import logging
+from telegram import Update, ParseMode
+from telegram.ext import *
+from codecs import encode, decode
+from datetime import datetime
+from ast import literal_eval
 import Constants as Keys
-from Roll import Roll, WodRoll
+
+ladder = {
+    8: 'Legendario',
+    7: 'Epico',
+    6: 'Fantástico',
+    5: 'Soberbio',
+    4: 'Grandioso',
+    3: 'Bueno',
+    2: 'Regular',
+    1: 'Promedio',
+    0: 'Mediocre',
+    -1: 'Pobre',
+    -2: 'Terrible'
+}
 
 
-# Enable logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
+def get_ladder(result):
+    if result > 8:
+        return 'Mas alla de legendario'
+    elif result < -2:
+        return 'Terrible'
+    else:
+        return ladder[result]
 
-logger = logging.getLogger(__name__)
+
+fate_options = {
+    -1: '[-]',
+    0: '[  ]',
+    1: '[+]'
+}
+
+def rf(update: Update, context: CallbackContext):
+    logging.debug(context.args)
+    if len(context.args) > 0:
+        context.args[0] = '4df+' + str(context.args[0])
+    else:
+        context.args = ['4df']
+    process(update, context)
 
 
-# Define a few command handlers. These usually take the two arguments bot and
-# update. Error handlers also receive the raised TelegramError object in error.
+def process(update: Update, context: CallbackContext):
+    username = update.message.from_user.username if update.message.from_user.username else update.message.from_user.first_name
+    equation = context.args[0].strip() if len(context.args) > 0 else False
+    equation_list = re.findall(r'(\w+!?>?\d*)([+*/()-]?)', equation)
+    comment = ' ' + ' '.join(context.args[1:]) if len(context.args) > 1 else ''
+    space = ''
+    dice_num = None
+    original_dice_num = None
+    is_fate = False
+    use_ladder = False
+    nat20text = ''
+    high_low_helper = ''
+    if '2d20' in equation.lower() and not ('2d20h' in equation.lower() or '2d20l' in equation.lower()):
+        high_low_helper = 'Obten el valor mas bajo y alte en una tirada usando H and L.\r\nEscribe <code>/help</code> para mas info.\r\n\r\n'
+    result = {
+        'visual': [],
+        'equation': [],
+        'total': ''
+    }
+
+    try:
+        for pair in equation_list:
+            logging.debug(f"pair: {pair}")
+            pair = [i for i in pair if i]
+            for item in pair:
+                logging.debug(f"item: {item}")
+                if item and len(item) > 1 and any(d in item for d in ['d', 'D']):
+                    dice = re.search(r'(\d*)d([0-9f]+)([!hl])?', item.lower())
+                    dice_num = int(dice.group(1)) if dice.group(1) else 1
+                    original_dice_num = dice_num
+                    if dice_num > 1000:
+                        raise Exception('La cantidad máxima de dados para tirar es de 1000')
+                    sides = dice.group(2)
+                    space = ' '
+                    result['visual'].append(space + '(')
+                    result['equation'].append('(')
+                    fate_dice = ''
+                    current_die_results = ''
+                    current_visual_results = ''
+                    plus = ''
+                    explode = False
+                    highest = False
+                    lowest = False
+                    if dice.group(3) and dice.group(3)[0] == '!' and int(dice.group(2)) > 1:
+                        explode = True
+                    elif dice.group(3) and dice.group(3)[0] in ['h', 'H']:
+                        highest = True
+                    elif dice.group(3) and dice.group(3)[0] in ['l', 'L']:
+                        lowest = True
+
+                    random_start_num = 1
+                    if sides in ['f', 'F']:
+                        is_fate = True
+                        use_ladder = True
+                        sides = 1
+                        random_start_num = -1
+                    else:
+                        sides = int(sides)
+
+                    while dice_num > 0:
+
+                        last_roll = random.randint(random_start_num, sides)
+                        visual_last_roll = plus + str(last_roll)
+                        if is_fate:
+                            visual_last_roll = fate_options[last_roll] + ' '
+                        current_visual_results += visual_last_roll
+
+                        if (highest or lowest) and current_die_results:
+                            # print(current_die_results)
+                            if highest:
+                                if last_roll > int(current_die_results):
+                                    current_die_results = str(last_roll)
+                            else:  # lowest
+                                if last_roll < int(current_die_results):
+                                    current_die_results = str(last_roll)
+                        else:
+                            current_die_results += plus + str(last_roll)
+
+                        if not (explode and last_roll == sides):
+                            dice_num -= 1
+
+                        if len(plus) == 0:
+                            # Adds all results to result unless it is the first one
+                            plus = ' + '
+
+                        if sides == 20 and last_roll == 20 and original_dice_num < 3 and '20' in current_die_results:
+                            nat20text = '    #Natural20'
+
+                    if is_fate:
+                        is_fate = False
+                    result['visual'].append(current_visual_results)
+                    result['equation'].append(current_die_results)
+                    result['visual'].append(')')
+                    result['equation'].append(')')
+                    if highest or lowest:
+                        result['visual'].append(dice.group(3)[0])
+                else:
+                    if item and (item in ['+', '-', '/', '*', ')', '('] or int(item)):
+                        result['visual'].append(' ')
+                        result['visual'].append(item)
+                        result['equation'].append(item)
+
+        result['total'] = str(''.join(result['equation'])).replace(" ", "")
+        if bool(re.match('^[0-9+*/ ()-]+$', result['total'])):
+            result['total'] = eval(result['total'])
+        else:
+            raise Exception('La solicitud no es valida, checa tu sintaxis')
+
+        if use_ladder:
+            # Set if final result is positive or negative
+            sign = '+' if result['total'] > -1 else ''
+            ladder_result = get_ladder(result['total'])
+            result['total'] = sign + str(result['total']) + ' ' + ladder_result
+
+        # Only show part of visual equation if bigger than 300 characters
+        result['visual'] = ''.join(result['visual'])
+        if len(result['visual']) > 275:
+            result['visual'] = result['visual'][0:275] + ' . . . )'
+
+        logging.info(f'@{username} | ' + ' '.join(context.args) + ' = ' + ''.join(result['equation']) + ' = ' + str(
+            result['total']) + nat20text)
+        response = (
+            f'{high_low_helper}@{username} tiró<b>{comment}</b>:\r\n {result["visual"]} =\r\n<b>{str(result["total"])}</b>{nat20text}')
+        error = ''
+
+    except Exception as e:
+        response = f'@{username}: <b>Ecuación invalida!</b>\r\n'
+        if dice_num and dice_num > 1000:
+            response += str(e) + '.\r\n'
+        response += ('Por favor usa <a href="https://en.wikipedia.org/wiki/Dice_notation"> la notación de dados</a>.\r\n' +
+                     'Por ejemplo: <code>3d6</code>, o <code>1d20+5</code>, o <code>d12</code>\r\n\r\n' +
+                     'Para mas información, escribe <code>/help</code>'
+                     )
+        error = traceback.format_exc().replace('\r', '').replace('\n', '; ')
+        logging.warning(f'@{username} | /r {equation} | RESPONSE: Ecuación invalida |\r\n{error}')
+
+    context.bot.send_message(chat_id=update.message.chat_id, text=response, parse_mode=ParseMode.HTML)
+
+
+def help(update: Update, context: CallbackContext):
+    username = update.message.from_user.username if update.message.from_user.username else update.message.from_user.first_name
+    help_file = open('help.html', 'r')
+    response = (help_file.read())
+    help_file.close()
+    logging.info(f'@{username} | /help')
+    job = context.job
+    context.bot.send_message(chat_id=update.message.chat_id, text=response, parse_mode=ParseMode.HTML,
+                             disable_web_page_preview=True)
+
 def start(update, context):
     """Send a message when the command /start is issued."""
-    update.message.reply_text("Bienvenido al Bot de Wod. Escriba /roll NdF, ex. 3d10 o /wod N D")
-
-
-def help(update, context):
-    """Send a message when the command /help is issued."""
-    update.message.reply_text('Aun no implemento el menu')
-
-
-def echo(context, update):
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
+    update.message.reply_text("Bienvenido al Bot oficial de Wod Lobo. Para hacer su tirada escriba /roll NdF, ex. 3d10")
 
 
 def error(bot, update, error):
@@ -34,7 +211,7 @@ def error(bot, update, error):
 
 
 def xp(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/xp-1.png', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('xp-1.png', 'rb'))
 
 
 def armor(bot, update):
@@ -42,71 +219,52 @@ def armor(bot, update):
 
 
 def melee(bot, update):
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('img/Tabla-de-armas-cuerpo-a-cuerpo.png', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('Tabla-de-armas-cuerpo-a-cuerpo.png', 'rb'))
 
 
 def weapons(bot, update):
     bot.send_photo(chat_id=update.message.chat_id, photo=open('img/tabla-de-armas-de-largo-alcance.png', 'rb'))
 
 
-def roll(bot, update, args):
-    args = args[0]
-    roll = Roll(args)
+formatter = logging.Formatter('====> %(asctime)s | %(name)s | %(levelname)s | %(message)s')
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging.INFO)
+stream_handler.setFormatter(formatter)
+file_handler = logging.FileHandler('roll.log')
+file_handler.setLevel(logging.WARNING)
+file_handler.setFormatter(formatter)
 
-    bot.send_message(chat_id=update.message.chat_id, text="Rolling {} : {}".format(args, roll.roll_dice()))
+logger = logging.basicConfig(
+    handlers=[stream_handler, file_handler],
+    level=logging.DEBUG,
+)
 
-
-def wod_roll(bot, update, args):
-    """"
-    World of Destruction Rolls
-    """
-    args = ' '.join(args).upper()
-
-    roll = WodRoll(args)
-    n, d, result, message = roll.roll_dice()
-
-    bot.send_message(chat_id=update.message.chat_id, text="Lanzando {}d10 : Dificultad de {} \n"
-                                                          "Result: {} => {}".format(n, d, result, message))
-
-
-def unknown(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text="Lo siento no entendi el comando.")
+print('Corriendo el bot... ')
+# Create the EventHandler and pass it your bot's token.
+updater = Updater(Keys.API_KEY, use_context=True)
+dispatcher = updater.dispatcher
 
 
-def main():
-    print('Running bot... ')
-    # Create the EventHandler and pass it your bot's token.
-    updater = Updater(Keys.API_KEY, use_context=True)
 
-    # Get the dispatcher to register handlers
-    dp = updater.dispatcher
-
-    # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("xp", xp))
-    dp.add_handler(CommandHandler("roll", roll))
-    dp.add_handler(CommandHandler("wod", wod_roll))
-    dp.add_handler(CommandHandler("armor", armor))
-    dp.add_handler(CommandHandler("melee", melee))
-    dp.add_handler(CommandHandler("weapons", weapons))
-
-    dp.add_handler(MessageHandler(Filters.command, unknown))
-
-    # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
-
-    # log all errors
-    dp.add_error_handler(error)
-
-    # Start the Bot
-    updater.start_polling()
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
-    updater.idle()
+# on different commands - answer in Telegram
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(CommandHandler("help", help))
+dispatcher.add_handler(CommandHandler("xp", xp))
+dispatcher.add_handler(CommandHandler("armor", armor))
+dispatcher.add_handler(CommandHandler("melee", melee))
+dispatcher.add_handler(CommandHandler("weapons", weapons))
 
 
-if __name__ == "__main__":
-    main()
+# log all errors
+dispatcher.add_error_handler(error)
+
+roll_handler = CommandHandler(['roll', 'r'], process, pass_args=True)
+dispatcher.add_handler(roll_handler)
+
+roll_handler = CommandHandler('rf', rf, pass_args=True)
+dispatcher.add_handler(roll_handler)
+
+help_handler = CommandHandler('help', help)
+dispatcher.add_handler(help_handler)
+
+updater.start_polling()
