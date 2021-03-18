@@ -1,1 +1,2 @@
 API_KEY = '1623741914:AAGDffjZfhWc_Soc6-hgFYYnLWEh0ZkNeFI'
+BOTNAME = "Diceroller_botWOD"
