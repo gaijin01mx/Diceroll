@@ -186,7 +186,7 @@ def process(update: Update, context: CallbackContext):
                      'Para mas info teclea <code>/help</code>'
                      )
         error = traceback.format_exc().replace('\r', '').replace('\n', '; ')
-        logging.warning(f'@{username} | /r {equation} | RESPONSE: Ecuación inválida |\r\n{error}')
+        logging.warning(f'@{username} | /r {equation} | RESPONSE: Invalid equation |\r\n{error}')
 
     context.bot.send_message(chat_id=update.message.chat_id, text=response, parse_mode=ParseMode.HTML)
 
